@@ -13,6 +13,8 @@ interface TravelProfile {
   from: string;
   to: string;
   date: string;
+  classCode: string;
+  quotaCode: string;
   passengers: Passenger[];
 }
 
@@ -85,6 +87,76 @@ const handleCaptcha = async () => {
   }
 };
 
+const automateSearch = async (profile: TravelProfile) => {
+  console.log("Automating search...");
+  const fromInput = document.querySelector('input[aria-controls="pr_id_1_list"]') as HTMLInputElement;
+  const toInput = document.querySelector('input[aria-controls="pr_id_2_list"]') as HTMLInputElement;
+  const dateInput = document.querySelector('p-calendar[formcontrolname="journeyDate"] input') as HTMLInputElement;
+  const quotaDropdown = document.querySelector('p-dropdown[formcontrolname="quota"]') as HTMLElement;
+
+  if (fromInput) {
+    await typeHumanLike(fromInput, profile.from);
+    await new Promise(r => setTimeout(r, 500));
+    const firstOption = document.querySelector('#pr_id_1_list li') as HTMLElement;
+    if (firstOption) firstOption.click();
+  }
+
+  if (toInput) {
+    await typeHumanLike(toInput, profile.to);
+    await new Promise(r => setTimeout(r, 500));
+    const firstOption = document.querySelector('#pr_id_2_list li') as HTMLElement;
+    if (firstOption) firstOption.click();
+  }
+
+  // Handle Quota
+  if (quotaDropdown) {
+    quotaDropdown.click();
+    await new Promise(r => setTimeout(r, 300));
+    const options = document.querySelectorAll('p-dropdownitem li');
+    for (const opt of Array.from(options)) {
+      if (opt.textContent?.toUpperCase().includes(profile.quotaCode)) {
+        (opt as HTMLElement).click();
+        break;
+      }
+    }
+  }
+
+  if (dateInput && profile.date) {
+    // IRCTC date input can be tricky, often requires direct value setting and event dispatch
+    dateInput.value = profile.date; // Format should be DD-MM-YYYY or as expected by IRCTC
+    dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  const searchBtn = document.querySelector('button[type="submit"]') as HTMLElement;
+  if (searchBtn) searchBtn.click();
+};
+
+const automateTrainSelection = async (profile: TravelProfile) => {
+  console.log("Automating train selection...");
+  const trainRows = document.querySelectorAll('div.train-list-block');
+  for (const row of Array.from(trainRows)) {
+    if (row.textContent?.includes(profile.trainNo)) {
+      const classes = row.querySelectorAll('div.pre-avail-column');
+      for (const cls of Array.from(classes)) {
+        if (cls.textContent?.includes(profile.classCode)) {
+          (cls as HTMLElement).click();
+          await new Promise(r => setTimeout(r, 800));
+          const bookNowBtn = row.querySelector('button.btnDefault.train_Search') as HTMLElement;
+          if (bookNowBtn) bookNowBtn.click();
+          return;
+        }
+      }
+    }
+  }
+};
+
+const automateReviewPage = async () => {
+  console.log("Automating review page...");
+  const continueBtn = document.querySelector('button.btn-primary[type="submit"]') || 
+                      document.querySelector('button.btn-primary.capBtn');
+  if (continueBtn) (continueBtn as HTMLElement).click();
+};
+
 const init = async () => {
   const { profiles, activeProfileId } = await chrome.storage.local.get(['profiles', 'activeProfileId']);
   const activeProfile = (profiles as TravelProfile[])?.find(p => p.id === activeProfileId);
@@ -94,10 +166,16 @@ const init = async () => {
     return;
   }
 
-  // Detect page and act
-  if (window.location.href.includes('passenger-details')) {
+  const url = window.location.href;
+  if (url.includes('train-search')) {
+    automateSearch(activeProfile);
+  } else if (url.includes('train-list')) {
+    automateTrainSelection(activeProfile);
+  } else if (url.includes('booking/psgninput')) {
     autofillPassengers(activeProfile);
-  } else if (window.location.href.includes('login')) {
+  } else if (url.includes('booking/review')) {
+    automateReviewPage();
+  } else if (url.includes('login')) {
     handleCaptcha();
   }
 };

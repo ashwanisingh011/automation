@@ -13,6 +13,8 @@ interface TravelProfile {
   from: string;
   to: string;
   date: string;
+  classCode: string;
+  quotaCode: string;
   passengers: Passenger[];
 }
 
@@ -38,6 +40,8 @@ const Options: React.FC = () => {
       from: '',
       to: '',
       date: '',
+      classCode: '3A',
+      quotaCode: 'TATKAL',
       passengers: [{ name: '', age: '', gender: 'M', birthPreference: '' }]
     };
     setProfiles([...profiles, newProfile]);
@@ -134,7 +138,7 @@ const Options: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <div className="space-y-1.5">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Train Number</label>
                   <input 
@@ -160,6 +164,69 @@ const Options: React.FC = () => {
                       setProfiles(newProfiles);
                     }}
                   />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">From Station</label>
+                  <input 
+                    type="text" placeholder="e.g. NDLS" 
+                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all font-bold text-slate-700 uppercase"
+                    value={profile.from}
+                    onChange={(e) => {
+                      const newProfiles = [...profiles];
+                      newProfiles[index].from = e.target.value;
+                      setProfiles(newProfiles);
+                    }}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">To Station</label>
+                  <input 
+                    type="text" placeholder="e.g. BCT" 
+                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all font-bold text-slate-700 uppercase"
+                    value={profile.to}
+                    onChange={(e) => {
+                      const newProfiles = [...profiles];
+                      newProfiles[index].to = e.target.value;
+                      setProfiles(newProfiles);
+                    }}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Class</label>
+                  <select 
+                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all font-bold text-slate-700"
+                    value={profile.classCode}
+                    onChange={(e) => {
+                      const newProfiles = [...profiles];
+                      newProfiles[index].classCode = e.target.value;
+                      setProfiles(newProfiles);
+                    }}
+                  >
+                    <option value="1A">First AC (1A)</option>
+                    <option value="2A">Second AC (2A)</option>
+                    <option value="3A">Third AC (3A)</option>
+                    <option value="3E">3 AC Economy (3E)</option>
+                    <option value="CC">AC Chair Car (CC)</option>
+                    <option value="SL">Sleeper (SL)</option>
+                    <option value="2S">Second Sitting (2S)</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-wider ml-1">Quota</label>
+                  <select 
+                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all font-bold text-slate-700"
+                    value={profile.quotaCode}
+                    onChange={(e) => {
+                      const newProfiles = [...profiles];
+                      newProfiles[index].quotaCode = e.target.value;
+                      setProfiles(newProfiles);
+                    }}
+                  >
+                    <option value="GENERAL">General</option>
+                    <option value="TATKAL">Tatkal</option>
+                    <option value="PREMIUM TATKAL">Premium Tatkal</option>
+                    <option value="LADIES">Ladies</option>
+                  </select>
                 </div>
               </div>
 
